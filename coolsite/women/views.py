@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from django.views.generic import ListView, DetailView, CreateView, FormView
+from django.views.generic import ListView, DetailView, CreateView, FormView, TemplateView
 from django.contrib.auth import logout, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
@@ -41,12 +41,13 @@ class WomenHome(DataMixin, ListView):
 #     return render(request, 'women/index.html', context)
 
 
-def about(request):
-    context = {
-        'menu': menu,
-        'title': 'О сайте'
-    }
-    return render(request, 'women/about.html', context)
+class About(DataMixin, TemplateView):
+    template_name = 'women/about.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='О нас')
+        return dict(list(context.items()) + list(c_def.items()))
 
 
 class AddPage(LoginRequiredMixin, DataMixin, CreateView):
@@ -167,7 +168,7 @@ class RegisterUser(DataMixin, CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
-        return redirect('home')
+        return redirect('index')
 
 
 class LoginUser(DataMixin, LoginView):
